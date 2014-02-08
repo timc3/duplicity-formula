@@ -1,0 +1,10 @@
+{% set monthly_backups = pillar.get('monthly_backups', {}) %}{% if monthly_backups != {} %}
+#!/bin/sh
+{% set gpg_key = pillar.get('gpg_key', {}) %}
+test -x $(which duplicity) || exit 0
+. /root/.passphrase
+
+export PASSPHRASE{% for section in monthly_backups.keys() %}
+$(which duplicity) {% if monthly_backups.get(section, None).get('full', None) != None %}full{% endif %} --encrypt-key {{ gpg_key }} {{ monthly_backups.get(section)['local_path'] }} {{ monthly_backups.get(section)['remote_path'] }}  
+{% endfor %}{% endif %}
+

@@ -1,0 +1,10 @@
+{% set weekly_backups = pillar.get('weekly_backups', {}) %}{% if weekly_backups != {} %}
+#!/bin/sh
+{% set gpg_key = pillar.get('gpg_key', {}) %}
+test -x $(which duplicity) || exit 0
+. /root/.passphrase
+
+export PASSPHRASE{% for section in weekly_backups.keys() %}
+$(which duplicity) {% if weekly_backups.get(section, None).get('full',None) != None %}full{% endif %} [--encrypt-key {{ gpg_key }} {{ weekly_backups.get(section)['local_path'] }} {{ weekly_backups.get(section)['remote_path'] }}  
+{% endfor %}{% endif %}
+
